@@ -210,13 +210,52 @@ you run "terraform apply" now.
 ## Part 3: plan that found the drift after `kubectl scale`
 
 ```
+kubernetes_service_v1.hello: Refreshing state... [id=default/hello-app]
+kubernetes_deployment_v1.hello: Refreshing state... [id=default/hello-app]
 
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the
+following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # kubernetes_deployment_v1.hello will be updated in-place
+  ~ resource "kubernetes_deployment_v1" "hello" {
+        id               = "default/hello-app"
+        # (1 unchanged attribute hidden)
+
+      ~ spec {
+          ~ replicas                  = "5" -> "3"
+            # (4 unchanged attributes hidden)
+
+            # (3 unchanged blocks hidden)
+        }
+
+        # (1 unchanged block hidden)
+    }
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if
+you run "terraform apply" now.
+
+
+Deleted the Service by hand. terraform plan showed:
+# kubernetes_service_v1.hello will be created
+Plan: 1 to add, 0 to change, 0 to destroy.
+After terraform apply, the page recovered.
 ```
 
 ## Part 4: `kubectl get svc -A` showing dev and prod
 
 ```
-
+NAMESPACE     NAME         TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                  AGE
+default       kubernetes   ClusterIP      10.96.0.1      <none>        443/TCP                  3d17h
+dev           hello-app    LoadBalancer   10.96.71.123   172.18.0.8    8080:31440/TCP           10s
+kube-system   kube-dns     ClusterIP      10.96.0.10     <none>        53/UDP,53/TCP,9153/TCP   3d17h
+prod          hello-app    LoadBalancer   10.96.231.51   172.18.0.7    8090:30163/TCP           83s
 ```
 
 ## Break it: the error after deleting `terraform.tfstate`
