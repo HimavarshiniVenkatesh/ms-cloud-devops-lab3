@@ -261,14 +261,31 @@ prod          hello-app    LoadBalancer   10.96.231.51   172.18.0.7    8090:3016
 ## Break it: the error after deleting `terraform.tfstate`
 
 ```
+Plan: 3 to add, 0 to change, 0 to destroy.
 
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.hello.kubernetes_namespace_v1.env: Creating...
+╷
+│ Error: Error creating namespace
+│
+│   with module.hello.kubernetes_namespace_v1.env,
+│   on ..\..\modules\hello-app\main.tf line 34, in resource "kubernetes_namespace_v1" "env":
+│   34: resource "kubernetes_namespace_v1" "env" {
+│
+│ namespaces "dev" already exists
+╵
 ```
 
 ## Break it: the wrong selector
 
 What did you see, and how did you find the cause? One or two sentences.
 
-
+`terraform apply` finished with no errors, but the dev page stopped loading while prod kept working. I ran `kubectl get endpointslices -n dev -l kubernetes.io/service-name=hello-app` and the EndpointSlice was empty, because the Service selector `helo-app` (typo) matched no Pod labels. Terraform only checks that the cluster matches the code, not that the code is right.
 
 ## Screenshot
 
